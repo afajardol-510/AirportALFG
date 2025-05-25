@@ -34,10 +34,6 @@ public class Passenger {
         this.country = country;
         this.flights = new ArrayList<>();
     }
-
-    public void addFlight(Flight flight) {
-        this.flights.add(flight);
-    }
     
     public long getId() {
         return id;
@@ -97,14 +93,6 @@ public class Passenger {
     
     public String getFullname() {
         return firstname + " " + lastname;
-    }
-    
-    public String generateFullPhone() {
-        return "+" + countryPhoneCode + " " + phone;
-    }
-    
-    public int calculateAge() {
-        return Period.between(birthDate, LocalDate.now()).getYears();
     }
     
     public int getNumFlights() {
