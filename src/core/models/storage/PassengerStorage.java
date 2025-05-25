@@ -16,7 +16,7 @@ public class PassengerStorage extends Storage{
     private static PassengerStorage instance;
     private ArrayList<Passenger> passengers;
 
-    public PassengerStorage() {
+    private PassengerStorage() {
         this.passengers=new ArrayList<>();
     }
     

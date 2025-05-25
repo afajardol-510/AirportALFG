@@ -16,7 +16,7 @@ public class LocationStorage extends Storage{
     private static LocationStorage instance; 
     private ArrayList<Location> locations;
 
-    public LocationStorage() {
+    private LocationStorage() {
         this.locations=new ArrayList<>();
     }
     

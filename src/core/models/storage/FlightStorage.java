@@ -16,7 +16,7 @@ public class FlightStorage extends Storage {
     private static FlightStorage instance; 
     private ArrayList<Flight> flights;
 
-    public FlightStorage() {
+    private FlightStorage() {
         this.flights=new ArrayList<>();
     }
     

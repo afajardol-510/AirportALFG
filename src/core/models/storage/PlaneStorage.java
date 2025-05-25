@@ -16,7 +16,7 @@ public class PlaneStorage extends Storage{
     private static PlaneStorage instance;
     private ArrayList<Plane> planes;
 
-    public PlaneStorage() {
+    private PlaneStorage() {
         this.planes=new ArrayList<>();
     }
     
