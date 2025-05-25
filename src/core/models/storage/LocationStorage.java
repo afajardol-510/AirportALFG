@@ -11,6 +11,7 @@ import java.util.ArrayList;
  *
  * @author DELL
  */
+//almacenamiento de locaciones
 public class LocationStorage extends Storage{
     private static LocationStorage instance; 
     private ArrayList<Location> locations;
@@ -28,6 +29,10 @@ public class LocationStorage extends Storage{
 
     public ArrayList<Location> getLocations() {
         return locations;
+    }
+
+    public void setLocations(ArrayList<Location> locations) {
+        this.locations = locations;
     }
     
 

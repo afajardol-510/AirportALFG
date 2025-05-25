@@ -7,8 +7,10 @@ package core.controllers;
 import core.controllers.utils.Response;
 import core.controllers.utils.Status;
 import core.models.Plane;
+import core.models.comboBox.PlaneLoadComboBox;
 import core.models.storage.PlaneStorage;
 import java.util.ArrayList;
+import javax.swing.JComboBox;
 
 /**
  *
@@ -16,26 +18,26 @@ import java.util.ArrayList;
  */
 public class PlaneController {
 
-    public static Response createPlane(String id, String brand, String model, String maxCapacity, String airline) {
+    public static Response createPlane(String id, String brand, String model, String maxCapacity, String airline, JComboBox<String> comboBox) {
 
         PlaneStorage planeStorage = PlaneStorage.getInstance();
         ArrayList<Plane> planes = planeStorage.getPlanes();
         try {
             //Validar que no haya campos vacios
             int maxCapacity1;
-            if (id.equals("") || id.isBlank()) {
+            if (id.equals("")) {
                 return new Response("Id must be not empty.", Status.BAD_REQUEST);
             }
-            if (brand.equals("") || brand.isBlank()) {
+            if (brand.equals("")) {
                 return new Response("Brand must be not empty.", Status.BAD_REQUEST);
             }
-            if (model.equals("") || model.isBlank()) {
+            if (model.equals("")) {
                 return new Response("Model must be not empty.", Status.BAD_REQUEST);
             }
-            if (maxCapacity.equals("") || maxCapacity.isBlank()) {
+            if (maxCapacity.equals("")) {
                 return new Response("MaxCapacity must be not empty.", Status.BAD_REQUEST);
             }
-            if (airline.equals("") || airline.isBlank()) {
+            if (airline.equals("")) {
                 return new Response("Airline must be not empty.", Status.BAD_REQUEST);
             }
 
@@ -56,7 +58,10 @@ public class PlaneController {
                 return new Response("MaxCapacity must be numeric", Status.BAD_REQUEST);
 
             }
+            //actualizar storage
             planeStorage.addItem(new Plane(id, brand, model, maxCapacity1, airline));
+            //actualizar ComboBox
+            PlaneLoadComboBox.cargarComboBox(comboBox);
             return new Response("Plane added.", Status.CREATED);
         } catch (Exception e) {
             return new Response("Unexpected error.", Status.INTERNAL_SERVER_ERROR);

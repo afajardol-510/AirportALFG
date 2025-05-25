@@ -7,39 +7,31 @@ package core.controllers;
 import core.controllers.utils.Response;
 import core.controllers.utils.Status;
 import core.models.Passenger;
-import core.models.comboBox.PassengerLoadComboBox;
 import core.models.storage.PassengerStorage;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import javax.swing.JComboBox;
 
 /**
  *
  * @author DELL
  */
-public class PassengerController {
+public class UpdateInfoPassengerController {
 
-    //paso 1. obtener datos
-    //paso 2. mandar la response
-    //paso 3. mandar la respuesta 
-    
-    public static Response registerPassenger(String id, String firstname, String lastname, String year, String month, String day, String countryPhoneCode, String phone, String country, JComboBox<String> comboBox) {
-
+    public static Response updateInfo(String id, String firstname, String lastname, String year, String month, String day, String countryPhoneCode, String phone, String country) {
         PassengerStorage passengerStorage = PassengerStorage.getInstance();
         ArrayList<Passenger> passengers = passengerStorage.getPassengers();
 
-        long id1;
+        long id2;
         int countryPhoneCode1, phone1, year1, month1, day1;
         LocalDate birthDate1;
+        Passenger passenger = null;
 
         try {
+
             //Validar que no haya campos vacios
             if (id.equals("")) {
-                return new Response("Id must be not empty.", Status.BAD_REQUEST);
+                return new Response("Select a passenger in administration.", Status.BAD_REQUEST);
             }
             if (firstname.equals("")) {
                 return new Response("Firstname must be not empty.", Status.BAD_REQUEST);
@@ -59,23 +51,10 @@ public class PassengerController {
             if (country.equals("")) {
                 return new Response("Country must be not empty.", Status.BAD_REQUEST);
             }
-
-            //validaciones id
-            try {
-                id1 = Long.parseLong(id);
-                if (id1 < 0) {
-                    return new Response("The ID must be positive.", Status.BAD_REQUEST);
-                }
-                if (String.valueOf(id).length() > 15) {
-                    return new Response("The ID must have a maximum of 15 digits.", Status.BAD_REQUEST);
-                }
-            } catch (NumberFormatException ex) {
-                return new Response("Id must be numeric", Status.BAD_REQUEST);
-            }
-            //id único
+            id2 = Long.parseLong(id);
             for (Passenger p : passengers) {
-                if (p.getId() == id1) {
-                    return new Response("A user with this ID is already registered.", Status.BAD_REQUEST);
+                if (p.getId() == id2) {
+                    passenger = p;
                 }
             }
 
@@ -114,6 +93,7 @@ public class PassengerController {
                 if (year1 <= 1900) {
                     return new Response("Invalid year.", Status.BAD_REQUEST);
                 }
+
             } catch (NumberFormatException e) {
                 return new Response("Year must be numeric.", Status.BAD_REQUEST);
             }
@@ -137,12 +117,15 @@ public class PassengerController {
             if (birthDate1.isAfter(LocalDate.now())) {
                 return new Response("The date of birth cannot be later than the current date. ", Status.BAD_REQUEST);
             }
-            //Actualizar Storage
-            Passenger passenger = new Passenger(id1, firstname, lastname, birthDate1, countryPhoneCode1, phone1, country);
-            passengerStorage.addItem(passenger);
-            //actualizar comboBoxs
-            PassengerLoadComboBox.cargarComboBox(comboBox);
-            return new Response("Passenger added.", Status.CREATED);
+            //actualizar pasajero
+            passenger.setFirstname(firstname);
+            passenger.setLastname(lastname);
+            passenger.setBirthDate(birthDate1);
+            passenger.setCountryPhoneCode(countryPhoneCode1);
+            passenger.setPhone(phone1);
+            passenger.setCountry(country);
+
+            return new Response("User information modified succesfully.", Status.CREATED);
 
         } catch (Exception e) {
             return new Response("Unexpected error.", Status.INTERNAL_SERVER_ERROR);

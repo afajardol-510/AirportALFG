@@ -11,6 +11,7 @@ import java.util.ArrayList;
  *
  * @author DELL
  */
+//almacenamiento de pasajeros
 public class PassengerStorage extends Storage{
     private static PassengerStorage instance;
     private ArrayList<Passenger> passengers;
@@ -28,6 +29,10 @@ public class PassengerStorage extends Storage{
 
     public ArrayList<Passenger> getPassengers() {
         return passengers;
+    }
+
+    public void setPassengers(ArrayList<Passenger> passengers) {
+        this.passengers = passengers;
     }
     
 

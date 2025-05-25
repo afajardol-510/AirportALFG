@@ -11,6 +11,7 @@ import java.util.ArrayList;
  *
  * @author DELL
  */
+//almacenamiento de aviones
 public class PlaneStorage extends Storage{
     private static PlaneStorage instance;
     private ArrayList<Plane> planes;
@@ -28,6 +29,10 @@ public class PlaneStorage extends Storage{
 
     public ArrayList<Plane> getPlanes() {
         return planes;
+    }
+
+    public void setPlanes(ArrayList<Plane> planes) {
+        this.planes = planes;
     }
 
     @Override

@@ -32,9 +32,12 @@ public class Flight {
         this.plane = plane;
         this.departureLocation = departureLocation;
         this.arrivalLocation = arrivalLocation;
+        this.scaleLocation = null;
         this.departureDate = departureDate;
         this.hoursDurationArrival = hoursDurationArrival;
         this.minutesDurationArrival = minutesDurationArrival;
+        this.hoursDurationScale = 0;
+        this.minutesDurationScale = 0;
         
         this.plane.addFlight(this);
     }
@@ -54,9 +57,9 @@ public class Flight {
         
         this.plane.addFlight(this);
     }
-    
-    public void addPassenger(Passenger passenger) {
-        this.passengers.add(passenger);
+
+    public ArrayList<Passenger> getPassengers() {
+        return passengers;
     }
     
     public String getId() {
@@ -102,15 +105,7 @@ public class Flight {
     public void setDepartureDate(LocalDateTime departureDate) {
         this.departureDate = departureDate;
     }
-    
-    public LocalDateTime calculateArrivalDate() {
-        return departureDate.plusHours(hoursDurationScale).plusHours(hoursDurationArrival).plusMinutes(minutesDurationScale).plusMinutes(minutesDurationArrival);
-    }
-    
-    public void delay(int hours, int minutes) {
-        this.departureDate = this.departureDate.plusHours(hours).plusMinutes(minutes);
-    }
-    
+      
     public int getNumPassengers() {
         return passengers.size();
     }

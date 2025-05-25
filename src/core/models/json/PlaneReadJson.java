@@ -2,26 +2,30 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package core.models.cargar;
+package core.models.json;
 
 import core.models.Plane;
 import core.models.storage.PlaneStorage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  *
  * @author DELL
  */
-public class PlaneReadJSON {
-
-    public void leerJson() {
-        try {
+public class PlaneReadJson {
+    //leer planes.json y pasar a planeStorage
+    public static void leerJson() throws IOException, JSONException{
+        ArrayList<Plane> planesX = new ArrayList<>();
+      
             PlaneStorage planeStorage = PlaneStorage.getInstance();
-            String contenido = new String(Files.readAllBytes(Paths.get("json//planes.json")));
+            
+            String contenido = new String(Files.readAllBytes(Paths.get("src\\json\\planes.json")));
             // Convertir a JSONArray
             JSONArray planes = new JSONArray(contenido);
 
@@ -35,13 +39,11 @@ public class PlaneReadJSON {
                 String airline = plane.getString("airline");
                 
                 Plane pla=new Plane(id, brand, model, maxCapacity, airline);
-                planeStorage.addItem(pla);
+                planesX.add(pla);
+                
             }
-
-        } catch (IOException e) {
-            System.out.println("Error al leer el archivo: " + e.getMessage());
-        } catch (org.json.JSONException e) {
-            System.out.println("Error al procesar el JSON: " + e.getMessage());
-        }
+            planeStorage.setPlanes(planesX);
+            
+        
     }
 }

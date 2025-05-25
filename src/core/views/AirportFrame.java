@@ -9,10 +9,20 @@ import core.models.Location;
 import core.models.Passenger;
 import core.models.Plane;
 import com.formdev.flatlaf.FlatDarkLaf;
+import core.controllers.AddFlightController;
+import core.controllers.DelayFlightController;
 import core.controllers.FlightController;
 import core.controllers.LocationController;
 import core.controllers.PassengerController;
 import core.controllers.PlaneController;
+import core.controllers.UpdateInfoPassengerController;
+import core.controllers.comboBox.LoadJsonComboBoxController;
+import core.controllers.json.ReadJsonController;
+import core.controllers.tables.FlightsTableController;
+import core.controllers.tables.LocationsTableController;
+import core.controllers.tables.MyFlightsTableController;
+import core.controllers.tables.PassengersTableController;
+import core.controllers.tables.PlanesTableController;
 import core.controllers.utils.Response;
 import java.awt.Color;
 import java.time.LocalDate;
@@ -32,18 +42,12 @@ public class AirportFrame extends javax.swing.JFrame {
      * Creates new form AirportFrame
      */
     private int x, y;
-    private ArrayList<Passenger> passengers;
-    private ArrayList<Plane> planes;
-    private ArrayList<Location> locations;
-    private ArrayList<Flight> flights;
 
     public AirportFrame() {
         initComponents();
 
-        this.passengers = new ArrayList<>();
-        this.planes = new ArrayList<>();
-        this.locations = new ArrayList<>();
-        this.flights = new ArrayList<>();
+        this.uploadJson();
+        this.uploadJsonComboBox();
 
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
@@ -53,6 +57,24 @@ public class AirportFrame extends javax.swing.JFrame {
         this.generateHours();
         this.generateMinutes();
         this.blockPanels();
+    }
+
+    private void uploadJson() {
+        Response response = ReadJsonController.readJson();
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void uploadJsonComboBox() {
+        Response response = LoadJsonComboBoxController.loadComboBox(jComboxUserSelect, jComboxPlaneFR, jComboxDLocationFR, jComboxALocationFR, jComboxSLocationFR, jComboxFlightATF, jComboxIDDF);
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private void blockPanels() {
@@ -114,7 +136,7 @@ public class AirportFrame extends javax.swing.JFrame {
         jPanelAdministration = new javax.swing.JPanel();
         user = new javax.swing.JRadioButton();
         administrator = new javax.swing.JRadioButton();
-        userSelect = new javax.swing.JComboBox<>();
+        jComboxUserSelect = new javax.swing.JComboBox<>();
         jPanelPassengerRegistration = new javax.swing.JPanel();
         jLabelCountry = new javax.swing.JLabel();
         jLabelIDPR = new javax.swing.JLabel();
@@ -315,14 +337,14 @@ public class AirportFrame extends javax.swing.JFrame {
         });
         jPanelAdministration.add(administrator, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 164, -1, -1));
 
-        userSelect.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        userSelect.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select User" }));
-        userSelect.addActionListener(new java.awt.event.ActionListener() {
+        jComboxUserSelect.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        jComboxUserSelect.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select User" }));
+        jComboxUserSelect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                userSelectActionPerformed(evt);
+                jComboxUserSelectActionPerformed(evt);
             }
         });
-        jPanelAdministration.add(userSelect, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 300, 130, -1));
+        jPanelAdministration.add(jComboxUserSelect, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 300, 130, -1));
 
         jTabbedPane1.addTab("Administration", jPanelAdministration);
 
@@ -579,6 +601,11 @@ public class AirportFrame extends javax.swing.JFrame {
 
         jComboxPlaneFR.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         jComboxPlaneFR.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Plane" }));
+        jComboxPlaneFR.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboxPlaneFRActionPerformed(evt);
+            }
+        });
 
         jComboxDLocationFR.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         jComboxDLocationFR.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Location" }));
@@ -1414,7 +1441,7 @@ public class AirportFrame extends javax.swing.JFrame {
     private void administratorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_administratorActionPerformed
         if (user.isSelected()) {
             user.setSelected(false);
-            userSelect.setSelectedIndex(0);
+            jComboxUserSelect.setSelectedIndex(0);
 
         }
         for (int i = 1; i < jTabbedPane1.getTabCount(); i++) {
@@ -1422,6 +1449,7 @@ public class AirportFrame extends javax.swing.JFrame {
         }
         jTabbedPane1.setEnabledAt(5, false);
         jTabbedPane1.setEnabledAt(6, false);
+        jTabbedPane1.setEnabledAt(7, false);
     }//GEN-LAST:event_administratorActionPerformed
 
     private void userActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userActionPerformed
@@ -1455,7 +1483,7 @@ public class AirportFrame extends javax.swing.JFrame {
         String country = jtxtCountry.getText();
 
         //this.userSelect.addItem("" + id); como long
-        Response response = PassengerController.registerPassenger(id, firstname, lastname, year, month, day, phoneCode, phone, country);
+        Response response = PassengerController.registerPassenger(id, firstname, lastname, year, month, day, phoneCode, phone, country, jComboxUserSelect);
 
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
@@ -1463,6 +1491,16 @@ public class AirportFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jtxtID.setText("");
+            jtxtFirstName.setText("");
+            jtxtLastName.setText("");
+            jtxtYear.setText("");
+            jComboxMonth.setSelectedIndex(0);
+            jComboxDay.setSelectedIndex(0);
+            jtxtPhone1.setText("");
+            jtxtPhone2.setText("");
+            jtxtCountry.setText("");
+
         }
 
 
@@ -1478,13 +1516,19 @@ public class AirportFrame extends javax.swing.JFrame {
 
         //this.planes.add(new Plane(id, brand, model, maxCapacity, airline));
         //this.jComboxPlaneFR.addItem(id);
-        Response response = PlaneController.createPlane(id, brand, model, maxCapacity, airline);
+        Response response = PlaneController.createPlane(id, brand, model, maxCapacity, airline, jComboxPlaneFR);
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
         } else if (response.getStatus() >= 400) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jtxtIDAR.setText("");
+            jtxtBrandAR.setText("");
+            jtxtModelAR.setText("");
+            jtxtMaxCapacityAR.setText("");
+            jtxtAirlineAR.setText("");
+
         }
 
     }//GEN-LAST:event_jButtonCreateARActionPerformed
@@ -1502,67 +1546,27 @@ public class AirportFrame extends javax.swing.JFrame {
 //        this.jComboxDLocationFR.addItem(id);
 //        this.jComboxALocationFR.addItem(id);
 //        this.jComboxSLocationFR.addItem(id);
-        Response response = LocationController.createLocation(id, name, city, country, latitude, longitude);
+        Response response = LocationController.createLocation(id, name, city, country, latitude, longitude, jComboxDLocationFR,jComboxSLocationFR, jComboxALocationFR);
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
         } else if (response.getStatus() >= 400) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jtxtAirportIDLR.setText("");
+            jtxtAirportNameLR.setText("");
+            jtxtAirportCityLR.setText("");
+            jtxtAirportCountryLR.setText("");
+            jtxtAirportLatitudeLR.setText("");
+            jtxtAirportLongitudeLR.setText("");
         }
+
 
     }//GEN-LAST:event_jButtonCreateLRActionPerformed
 
     private void jButtonCreateFRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCreateFRActionPerformed
-//        // TODO add your handling code here:
-//        String id = jtxtIDFR.getText();
-//        String planeId = jComboxPlaneFR.getItemAt(jComboxPlaneFR.getSelectedIndex());
-//        String departureLocationId = jComboxDLocationFR.getItemAt(jComboxDLocationFR.getSelectedIndex());
-//        String arrivalLocationId = jComboxALocationFR.getItemAt(jComboxALocationFR.getSelectedIndex());
-//        String scaleLocationId = jComboxSLocationFR.getItemAt(jComboxSLocationFR.getSelectedIndex());
-//        int year = Integer.parseInt(jtxtYearFR.getText());
-//        int month = Integer.parseInt(jComboxDDMonthFR.getItemAt(jComboxDDMonthFR.getSelectedIndex()));
-//        int day = Integer.parseInt(jComboxDDDayFR.getItemAt(jComboxDDDayFR.getSelectedIndex()));
-//        int hour = Integer.parseInt(jComboxDDHourFR.getItemAt(jComboxDDHourFR.getSelectedIndex()));
-//        int minutes = Integer.parseInt(jComboxDDMinuteFR.getItemAt(jComboxDDMinuteFR.getSelectedIndex()));
-//        int hoursDurationsArrival = Integer.parseInt(jComboxADHourFR.getItemAt(jComboxADHourFR.getSelectedIndex()));
-//        int minutesDurationsArrival = Integer.parseInt(jComboxADMinuteFR.getItemAt(jComboxADMinuteFR.getSelectedIndex()));
-//        int hoursDurationsScale = Integer.parseInt(jComboxSDHourFR.getItemAt(jComboxSDHourFR.getSelectedIndex()));
-//        int minutesDurationsScale = Integer.parseInt(jComboxSDMinuteFR.getItemAt(jComboxSDMinuteFR.getSelectedIndex()));
-//
-//        LocalDateTime departureDate = LocalDateTime.of(year, month, day, hour, minutes);
-//
-//        Plane plane = null;
-//        for (Plane p : this.planes) {
-//            if (planeId.equals(p.getId())) {
-//                plane = p;
-//            }
-//        }
-//
-//        Location departure = null;
-//        Location arrival = null;
-//        Location scale = null;
-//        for (Location location : this.locations) {
-//            if (departureLocationId.equals(location.getAirportId())) {
-//                departure = location;
-//            }
-//            if (arrivalLocationId.equals(location.getAirportId())) {
-//                arrival = location;
-//            }
-//            if (scaleLocationId.equals(location.getAirportId())) {
-//                scale = location;
-//            }
-//        }
-//
-//        if (scale == null) {
-//            this.flights.add(new Flight(id, plane, departure, arrival, departureDate, hoursDurationsArrival, minutesDurationsArrival));
-//        } else {
-//            this.flights.add(new Flight(id, plane, departure, scale, arrival, departureDate, hoursDurationsArrival, minutesDurationsArrival, hoursDurationsScale, minutesDurationsScale));
-//        }
-//
-//        this.jComboxFlightATF.addItem(id);
 
-        //AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+//        this.jComboxFlightATF.addItem(id);
         String id = jtxtIDFR.getText();
         String planeId = jComboxPlaneFR.getItemAt(jComboxPlaneFR.getSelectedIndex());
         String departureLocationId = jComboxDLocationFR.getItemAt(jComboxDLocationFR.getSelectedIndex());
@@ -1577,8 +1581,87 @@ public class AirportFrame extends javax.swing.JFrame {
         String minutesDurationsArrival = jComboxADMinuteFR.getItemAt(jComboxADMinuteFR.getSelectedIndex());
         String hoursDurationsScale = jComboxSDHourFR.getItemAt(jComboxSDHourFR.getSelectedIndex());
         String minutesDurationsScale = jComboxSDMinuteFR.getItemAt(jComboxSDMinuteFR.getSelectedIndex());
-        
-        Response response = FlightController.createFlight(id, planeId, departureLocationId, scaleLocationId, arrivalLocationId, year, month, day, hour, minutes, hoursDurationsArrival, minutesDurationsArrival, hoursDurationsScale, minutesDurationsScale);
+
+        Response response = FlightController.createFlight(id, planeId, departureLocationId, scaleLocationId, arrivalLocationId, year, month, day, hour, minutes, hoursDurationsArrival, minutesDurationsArrival, hoursDurationsScale, minutesDurationsScale, jComboxFlightATF);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jtxtIDFR.setText("");
+            jtxtYearFR.setText("");
+            jComboxPlaneFR.setSelectedIndex(0);
+            jComboxDLocationFR.setSelectedIndex(0);
+            jComboxALocationFR.setSelectedIndex(0);
+            jComboxSLocationFR.setSelectedIndex(0);
+            jComboxDDMonthFR.setSelectedIndex(0);
+            jComboxDDDayFR.setSelectedIndex(0);
+            jComboxDDHourFR.setSelectedIndex(0);
+            jComboxDDMinuteFR.setSelectedIndex(0);
+            jComboxADHourFR.setSelectedIndex(0);
+            jComboxADMinuteFR.setSelectedIndex(0);
+            jComboxSDHourFR.setSelectedIndex(0);
+            jComboxSDMinuteFR.setSelectedIndex(0);
+        }
+    }//GEN-LAST:event_jButtonCreateFRActionPerformed
+
+    private void jButtonUpdateUIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonUpdateUIActionPerformed
+
+        String id = jtxtIDUI.getText();
+        String firstname = jtxtFirstNameUI.getText();
+        String lastname = jtxtLastNameUI.getText();
+        String year = jtxtYearUI.getText();
+        String month = jComboxMonth.getItemAt(jComboxMonthUI.getSelectedIndex());
+        String day = jComboxDay.getItemAt(jComboxDayUI.getSelectedIndex());
+        String phoneCode = jtxtPhone1UI.getText();
+        String phone = jtxtPhone2UI.getText();
+        String country = jtxtCountryUI.getText();
+
+        Response response = UpdateInfoPassengerController.updateInfo(id, firstname, lastname, year, month, day, phoneCode, phone, country);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jtxtFirstNameUI.setText("");
+            jtxtLastNameUI.setText("");
+            jtxtYearUI.setText("");
+            jComboxMonthUI.setSelectedIndex(0);
+            jComboxDayUI.setSelectedIndex(0);
+            jtxtPhone1UI.setText("");
+            jtxtPhone2UI.setText("");
+            jtxtCountryUI.setText("");
+        }
+
+    }//GEN-LAST:event_jButtonUpdateUIActionPerformed
+
+    private void jButtonAddATFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddATFActionPerformed
+        // TODO add your handling code here:
+        String passengerId = jtxtIDATF.getText();
+        String flightId = jComboxFlightATF.getItemAt(jComboxFlightATF.getSelectedIndex());
+
+        Response response = AddFlightController.addFlight(passengerId, flightId);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jComboxFlightATF.setSelectedIndex(0);
+        }
+    }//GEN-LAST:event_jButtonAddATFActionPerformed
+
+    private void jButtonDelayDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDelayDFActionPerformed
+
+        String flightId = jComboxIDDF.getItemAt(jComboxIDDF.getSelectedIndex());
+        String hours = jComboxHourDF.getItemAt(jComboxHourDF.getSelectedIndex());
+        String minutes = jComboxMinuteDF.getItemAt(jComboxMinuteDF.getSelectedIndex());
+        Response response = DelayFlightController.delayFlight(flightId, hours, minutes);
         
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
@@ -1586,130 +1669,73 @@ public class AirportFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jComboxIDDF.setSelectedIndex(0);
+            jComboxHourDF.setSelectedIndex(0);
+            jComboxMinuteDF.setSelectedIndex(0);
+            
+            
         }
-    }//GEN-LAST:event_jButtonCreateFRActionPerformed
-
-    private void jButtonUpdateUIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonUpdateUIActionPerformed
-        // TODO add your handling code here:
-        long id = Long.parseLong(jtxtIDUI.getText());
-        String firstname = jtxtFirstNameUI.getText();
-        String lastname = jtxtLastNameUI.getText();
-        int year = Integer.parseInt(jtxtYearUI.getText());
-        int month = Integer.parseInt(jComboxMonth.getItemAt(jComboxMonthUI.getSelectedIndex()));
-        int day = Integer.parseInt(jComboxDay.getItemAt(jComboxDayUI.getSelectedIndex()));
-        int phoneCode = Integer.parseInt(jtxtPhone1UI.getText());
-        long phone = Long.parseLong(jtxtPhone2UI.getText());
-        String country = jtxtCountryUI.getText();
-
-        LocalDate birthDate = LocalDate.of(year, month, day);
-
-        Passenger passenger = null;
-        for (Passenger p : this.passengers) {
-            if (p.getId() == id) {
-                passenger = p;
-            }
-        }
-
-        passenger.setFirstname(firstname);
-        passenger.setLastname(lastname);
-        passenger.setBirthDate(birthDate);
-        passenger.setCountryPhoneCode(phoneCode);
-        passenger.setPhone(phone);
-        passenger.setCountry(country);
-    }//GEN-LAST:event_jButtonUpdateUIActionPerformed
-
-    private void jButtonAddATFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddATFActionPerformed
-        // TODO add your handling code here:
-        long passengerId = Long.parseLong(jtxtIDATF.getText());
-        String flightId = jComboxFlightATF.getItemAt(jComboxFlightATF.getSelectedIndex());
-
-        Passenger passenger = null;
-        Flight flight = null;
-
-        for (Passenger p : this.passengers) {
-            if (p.getId() == passengerId) {
-                passenger = p;
-            }
-        }
-
-        for (Flight f : this.flights) {
-            if (flightId.equals(f.getId())) {
-                flight = f;
-            }
-        }
-
-        passenger.addFlight(flight);
-        flight.addPassenger(passenger);
-    }//GEN-LAST:event_jButtonAddATFActionPerformed
-
-    private void jButtonDelayDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDelayDFActionPerformed
-        // TODO add your handling code here:
-        String flightId = jComboxIDDF.getItemAt(jComboxIDDF.getSelectedIndex());
-        int hours = Integer.parseInt(jComboxHourDF.getItemAt(jComboxHourDF.getSelectedIndex()));
-        int minutes = Integer.parseInt(jComboxMinuteDF.getItemAt(jComboxMinuteDF.getSelectedIndex()));
-
-        Flight flight = null;
-        for (Flight f : this.flights) {
-            if (flightId.equals(f.getId())) {
-                flight = f;
-            }
-        }
-
-        flight.delay(hours, minutes);
+        
     }//GEN-LAST:event_jButtonDelayDFActionPerformed
 
     private void jButtonRefreshSMFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRefreshSMFActionPerformed
         // TODO add your handling code here:
-        long passengerId = Long.parseLong(userSelect.getItemAt(userSelect.getSelectedIndex()));
-
-        Passenger passenger = null;
-        for (Passenger p : this.passengers) {
-            if (p.getId() == passengerId) {
-                passenger = p;
-            }
-        }
-
-        ArrayList<Flight> flights = passenger.getFlights();
+        String passengerId = jComboxUserSelect.getItemAt(jComboxUserSelect.getSelectedIndex());
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0);
-        for (Flight flight : flights) {
-            model.addRow(new Object[]{flight.getId(), flight.getDepartureDate(), flight.calculateArrivalDate()});
+        Response response = MyFlightsTableController.updateMyFlightsTable(model, passengerId);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_jButtonRefreshSMFActionPerformed
 
     private void jButtonRefreshSAPAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRefreshSAPAActionPerformed
         // TODO add your handling code here:
         DefaultTableModel model = (DefaultTableModel) jTable2.getModel();
-        model.setRowCount(0);
-        for (Passenger passenger : this.passengers) {
-            model.addRow(new Object[]{passenger.getId(), passenger.getFullname(), passenger.getBirthDate(), passenger.calculateAge(), passenger.generateFullPhone(), passenger.getCountry(), passenger.getNumFlights()});
+        Response response = PassengersTableController.updatePassengersTable(model);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_jButtonRefreshSAPAActionPerformed
 
     private void jButtonRefreshSAFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRefreshSAFActionPerformed
         // TODO add your handling code here:
         DefaultTableModel model = (DefaultTableModel) jTable3.getModel();
-        model.setRowCount(0);
-        for (Flight flight : this.flights) {
-            model.addRow(new Object[]{flight.getId(), flight.getDepartureLocation().getAirportId(), flight.getArrivalLocation().getAirportId(), (flight.getScaleLocation() == null ? "-" : flight.getScaleLocation().getAirportId()), flight.getDepartureDate(), flight.calculateArrivalDate(), flight.getPlane().getId(), flight.getNumPassengers()});
+        Response response = FlightsTableController.updateFlightsTable(model);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_jButtonRefreshSAFActionPerformed
 
     private void jButtonRefreshSAPLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRefreshSAPLActionPerformed
         // TODO add your handling code here:
         DefaultTableModel model = (DefaultTableModel) jTableSAPL.getModel();
-        model.setRowCount(0);
-        for (Plane plane : this.planes) {
-            model.addRow(new Object[]{plane.getId(), plane.getBrand(), plane.getModel(), plane.getMaxCapacity(), plane.getAirline(), plane.getNumFlights()});
+        Response response = PlanesTableController.updatePlanesTable(model);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_jButtonRefreshSAPLActionPerformed
 
     private void jButtonRefreshSALActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRefreshSALActionPerformed
         // TODO add your handling code here:
         DefaultTableModel model = (DefaultTableModel) jTable5.getModel();
-        model.setRowCount(0);
-        for (Location location : this.locations) {
-            model.addRow(new Object[]{location.getAirportId(), location.getAirportName(), location.getAirportCity(), location.getAirportCountry()});
+        Response response = LocationsTableController.updateLocationsTable(model);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_jButtonRefreshSALActionPerformed
 
@@ -1717,10 +1743,10 @@ public class AirportFrame extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_jButtonCerrarActionPerformed
 
-    private void userSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userSelectActionPerformed
+    private void jComboxUserSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboxUserSelectActionPerformed
         try {
-            String id = userSelect.getSelectedItem().toString();
-            if (!id.equals(userSelect.getItemAt(0))) {
+            String id = jComboxUserSelect.getSelectedItem().toString();
+            if (!id.equals(jComboxUserSelect.getItemAt(0))) {
                 jtxtIDUI.setText(id);
                 jtxtIDATF.setText(id);
             } else {
@@ -1729,7 +1755,11 @@ public class AirportFrame extends javax.swing.JFrame {
             }
         } catch (Exception e) {
         }
-    }//GEN-LAST:event_userSelectActionPerformed
+    }//GEN-LAST:event_jComboxUserSelectActionPerformed
+
+    private void jComboxPlaneFRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboxPlaneFRActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jComboxPlaneFRActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton administrator;
@@ -1766,6 +1796,7 @@ public class AirportFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> jComboxSDHourFR;
     private javax.swing.JComboBox<String> jComboxSDMinuteFR;
     private javax.swing.JComboBox<String> jComboxSLocationFR;
+    private javax.swing.JComboBox<String> jComboxUserSelect;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
@@ -1870,6 +1901,5 @@ public class AirportFrame extends javax.swing.JFrame {
     private core.models.PanelRound panelRound2;
     private core.models.PanelRound panelRound3;
     private javax.swing.JRadioButton user;
-    private javax.swing.JComboBox<String> userSelect;
     // End of variables declaration//GEN-END:variables
 }

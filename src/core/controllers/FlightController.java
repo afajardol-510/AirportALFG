@@ -9,20 +9,23 @@ import core.controllers.utils.Status;
 import core.models.Flight;
 import core.models.Location;
 import core.models.Plane;
+import core.models.comboBox.FlightLoadComboBox;
+import core.models.flights.AddFlightToPlane;
 import core.models.storage.FlightStorage;
 import core.models.storage.LocationStorage;
 import core.models.storage.PlaneStorage;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import javax.swing.JComboBox;
 
 /**
  *
  * @author DELL
  */
 public class FlightController {
-
-    public static Response createFlight(String id, String planeId, String departureLocationId, String scaleLocationId, String arrivalLocationId, String year, String month, String day, String hour, String minutes, String hoursDurationArrival, String minutesDurationArrival, String hoursDurationScale, String minutesDurationScale) {
+    //controla create flight
+    public static Response createFlight(String id, String planeId, String departureLocationId, String scaleLocationId, String arrivalLocationId, String year, String month, String day, String hour, String minutes, String hoursDurationArrival, String minutesDurationArrival, String hoursDurationScale, String minutesDurationScale, JComboBox<String> comboBox) {
         FlightStorage flightStorage = FlightStorage.getInstance();
         ArrayList<Flight> flights = flightStorage.getFlights();
         PlaneStorage planeStorage = PlaneStorage.getInstance();
@@ -39,10 +42,10 @@ public class FlightController {
         try {
 
             //Validar campos vacios 
-            if (id.equals("") || id.isBlank()) {
+            if (id.equals("")) {
                 return new Response("Id must be not empty.", Status.BAD_REQUEST);
             }
-            if (year.equals("") || year.isBlank()) {
+            if (year.equals("")) {
                 return new Response("Year must be not empty.", Status.BAD_REQUEST);
             }
 
@@ -131,7 +134,7 @@ public class FlightController {
                 departureDate = LocalDateTime.of(year1, month1, day1, hour1, minutes1);
                 //validar que sea una fecha futura
                 if (departureDate.isBefore(LocalDateTime.now())) {
-                    return new Response("The departure date cannot be passed.", Status.BAD_REQUEST);
+                    return new Response("The departure date cannot be in the past.", Status.BAD_REQUEST);
                 }
             } catch (DateTimeException e) {
                 return new Response("Please select a valid date.", Status.BAD_REQUEST);
@@ -157,16 +160,22 @@ public class FlightController {
                 hoursDurationScale1 = Integer.parseInt(hoursDurationScale);
                 minutesDurationScale1 = Integer.parseInt(minutesDurationScale);
                 flight = new Flight(id, plane, departureLocation, scaleLocation, arrivalLocation, departureDate, hoursDurationArrival1, minutesDurationArrival1, hoursDurationScale1, minutesDurationScale1);
-                return new Response("Flight added.", Status.CREATED);
+
             } else {
                 //Si no hay escala, colocar las horas y los minutos en cero. Por lo que entendí, es así. :D 
+                //Modifique el constructor de flight que no recibe la eslala, para que pusiera scale en null y los tiempos en cero
                 hoursDurationScale1 = 0;
                 minutesDurationScale1 = 0;
                 flight = new Flight(id, plane, departureLocation, arrivalLocation, departureDate, hoursDurationArrival1, minutesDurationArrival1);
-                flightStorage.addItem(flight);
-                return new Response("Flight added.", Status.CREATED);
-            }
 
+            }
+            //Completar relación flight-plane
+            AddFlightToPlane.addFlight(plane, flight);
+            //Actualizar storage
+            flightStorage.addItem(flight);
+            //actualizar comboBox
+            FlightLoadComboBox.cargarComboBox(comboBox);
+            return new Response("Flight added.", Status.CREATED);
         } catch (Exception e) {
             return new Response("Unexpected error.", Status.INTERNAL_SERVER_ERROR);
 
